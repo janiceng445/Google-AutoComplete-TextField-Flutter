@@ -1,13 +1,9 @@
 library google_places_flutter;
 
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_places_flutter/model/place_details.dart';
 import 'package:google_places_flutter/model/prediction.dart';
 
-import 'package:rxdart/subjects.dart';
 import 'package:dio/dio.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -23,17 +19,21 @@ class GooglePlaceAutoCompleteTextField extends StatefulWidget {
   List<String>? countries = [];
   TextEditingController textEditingController = TextEditingController();
 
-  GooglePlaceAutoCompleteTextField(
-      {required this.textEditingController,
-      required this.googleAPIKey,
-      this.debounceTime: 600,
-      this.inputDecoration: const InputDecoration(),
-      this.itmClick,
-      this.isLatLngRequired=true,
-      this.textStyle: const TextStyle(),
-      this.countries,
-      this.getPlaceDetailWithLatLng,
-      });
+  /// Limit to 5 values only
+  List<String>? types;
+
+  GooglePlaceAutoCompleteTextField({
+    required this.textEditingController,
+    required this.googleAPIKey,
+    this.debounceTime = 600,
+    this.inputDecoration = const InputDecoration(),
+    this.itmClick,
+    this.isLatLngRequired = true,
+    this.textStyle = const TextStyle(),
+    this.countries,
+    this.getPlaceDetailWithLatLng,
+    this.types,
+  });
 
   @override
   _GooglePlaceAutoCompleteTextFieldState createState() =>
@@ -65,8 +65,11 @@ class _GooglePlaceAutoCompleteTextFieldState
 
   getLocation(String text) async {
     Dio dio = new Dio();
+    String types = widget.types != null && widget.types!.length > 0
+        ? "&types=${widget.types!.join("|")}"
+        : "";
     String url =
-        "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$text&key=${widget.googleAPIKey}";
+        "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$text&key=${widget.googleAPIKey}$types";
 
     if (widget.countries != null) {
       // in
@@ -81,8 +84,6 @@ class _GooglePlaceAutoCompleteTextFieldState
         }
       }
     }
-
-
 
     Response response = await dio.get(url);
     PlacesAutocompleteResponse subscriptionResponse =
@@ -104,7 +105,7 @@ class _GooglePlaceAutoCompleteTextFieldState
 
     this._overlayEntry = null;
     this._overlayEntry = this._createOverlayEntry();
-    Overlay.of(context)!.insert(this._overlayEntry!);
+    Overlay.of(context).insert(this._overlayEntry!);
     //   this._overlayEntry.markNeedsBuild();
   }
 
@@ -121,7 +122,7 @@ class _GooglePlaceAutoCompleteTextFieldState
   }
 
   OverlayEntry? _createOverlayEntry() {
-    if (context != null && context.findRenderObject() != null) {
+    if (context.findRenderObject() != null) {
       RenderBox renderBox = context.findRenderObject() as RenderBox;
       var size = renderBox.size;
       var offset = renderBox.localToGlobal(Offset.zero);
@@ -162,15 +163,14 @@ class _GooglePlaceAutoCompleteTextFieldState
                 ),
               ));
     }
+    return null;
   }
 
   removeOverlay() {
     alPredictions.clear();
     this._overlayEntry = this._createOverlayEntry();
-    if (context != null) {
-      Overlay.of(context)!.insert(this._overlayEntry!);
-      this._overlayEntry!.markNeedsBuild();
-    }
+    Overlay.of(context).insert(this._overlayEntry!);
+    this._overlayEntry!.markNeedsBuild();
   }
 
   Future<Response?> getPlaceDetailsFromPlaceId(Prediction prediction) async {
@@ -188,6 +188,7 @@ class _GooglePlaceAutoCompleteTextFieldState
     prediction.lng = placeDetails.result!.geometry!.location!.lng.toString();
 
     widget.getPlaceDetailWithLatLng!(prediction);
+    return null;
 
 //    prediction.latLng = new LatLng(
 //        placeDetails.result.geometry.location.lat,
@@ -196,7 +197,8 @@ class _GooglePlaceAutoCompleteTextFieldState
 }
 
 PlacesAutocompleteResponse parseResponse(Map responseBody) {
-  return PlacesAutocompleteResponse.fromJson(responseBody as Map<String, dynamic>);
+  return PlacesAutocompleteResponse.fromJson(
+      responseBody as Map<String, dynamic>);
 }
 
 PlaceDetails parsePlaceDetailMap(Map responseBody) {
