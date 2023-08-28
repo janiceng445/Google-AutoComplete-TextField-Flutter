@@ -29,6 +29,8 @@ class GooglePlaceAutoCompleteTextField extends StatefulWidget {
 
   /// Limit to 5 values only
   List<String>? types;
+  FocusNode? focusNode;
+  bool autofocus;
 
   GooglePlaceAutoCompleteTextField({
     required this.textEditingController,
@@ -46,6 +48,8 @@ class GooglePlaceAutoCompleteTextField extends StatefulWidget {
     this.seperatedBuilder,
     this.showError = true,
     this.types,
+    this.focusNode,
+    this.autofocus = false,
   });
 
   @override
@@ -86,6 +90,8 @@ class _GooglePlaceAutoCompleteTextFieldState
           children: [
             Expanded(
               child: TextFormField(
+                focusNode: widget.focusNode,
+                autofocus: widget.autofocus,
                 decoration: widget.inputDecoration,
                 style: widget.textStyle,
                 controller: widget.textEditingController,
