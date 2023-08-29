@@ -31,6 +31,7 @@ class GooglePlaceAutoCompleteTextField extends StatefulWidget {
   List<String>? types;
   FocusNode? focusNode;
   bool autofocus;
+  BoxDecoration? itemListBoxDecoration;
 
   GooglePlaceAutoCompleteTextField({
     required this.textEditingController,
@@ -50,6 +51,7 @@ class GooglePlaceAutoCompleteTextField extends StatefulWidget {
     this.types,
     this.focusNode,
     this.autofocus = false,
+    this.itemListBoxDecoration,
   });
 
   @override
@@ -204,33 +206,37 @@ class _GooglePlaceAutoCompleteTextFieldState
                   link: this._layerLink,
                   offset: Offset(0.0, size.height + 5.0),
                   child: Material(
-                      child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    itemCount: alPredictions.length,
-                    separatorBuilder: (context, pos) =>
-                        widget.seperatedBuilder ?? SizedBox(),
-                    itemBuilder: (BuildContext context, int index) {
-                      return InkWell(
-                        onTap: () {
-                          var selectedData = alPredictions[index];
-                          if (index < alPredictions.length) {
-                            widget.itemClick!(selectedData);
+                      child: Container(
+                    decoration: widget.itemListBoxDecoration,
+                    child: ListView.separated(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      itemCount: alPredictions.length,
+                      separatorBuilder: (context, pos) =>
+                          widget.seperatedBuilder ?? SizedBox(),
+                      itemBuilder: (BuildContext context, int index) {
+                        return InkWell(
+                          onTap: () {
+                            var selectedData = alPredictions[index];
+                            if (index < alPredictions.length) {
+                              widget.itemClick!(selectedData);
 
-                            if (widget.isLatLngRequired) {
-                              getPlaceDetailsFromPlaceId(selectedData);
+                              if (widget.isLatLngRequired) {
+                                getPlaceDetailsFromPlaceId(selectedData);
+                              }
+                              removeOverlay();
                             }
-                            removeOverlay();
-                          }
-                        },
-                        child: widget.itemBuilder != null
-                            ? widget.itemBuilder!(
-                                context, index, alPredictions[index])
-                            : Container(
-                                padding: EdgeInsets.all(10),
-                                child: Text(alPredictions[index].description!)),
-                      );
-                    },
+                          },
+                          child: widget.itemBuilder != null
+                              ? widget.itemBuilder!(
+                                  context, index, alPredictions[index])
+                              : Container(
+                                  padding: EdgeInsets.all(10),
+                                  child:
+                                      Text(alPredictions[index].description!)),
+                        );
+                      },
+                    ),
                   )),
                 ),
               ));
