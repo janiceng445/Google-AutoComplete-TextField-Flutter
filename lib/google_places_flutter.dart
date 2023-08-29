@@ -225,8 +225,8 @@ class _GooglePlaceAutoCompleteTextFieldState
                                   if (widget.isLatLngRequired) {
                                     getPlaceDetailsFromPlaceId(selectedData);
                                   }
-                                  removeOverlay();
                                 }
+                                removeOverlay();
                               },
                               child: widget.itemBuilder != null
                                   ? widget.itemBuilder!(
